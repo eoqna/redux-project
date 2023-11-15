@@ -14,10 +14,9 @@
     <div id="blue"></div>
     <div id="green"></div>
     <script>
+      // Redux는 단 하나의 Store를 가지고 상태관리한다.
       function reducer(state, action) {
         let newState;
-
-        console.log(state, action);
 
         if(state === undefined) {
           return {color: "yellow"};
@@ -26,13 +25,12 @@
         if(action.type === "CHANGE_COLOR") {
           newState = Object.assign({}, state, {color: action.color});
         }
-
+        console.log(action.type, action, state, newState);
         return newState;
       };
       const store = Redux.createStore(
         reducer,
-        window.__REDUX_DEVTOOLS_EXTENSION__ && 
-        window.__REDUX_DEVTOOLS_EXTENSION__()
+        window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
       );
 
       function red() {
