@@ -15,7 +15,7 @@
         if( state === undefined) {
           return {
             max_id: 2,
-            mode: "create",
+            mode: "read",
             selected_id: 1,
             contents: [
               { id: 1, title: "HTML", desc: "HTML is ..." },
@@ -25,7 +25,7 @@
         }
 
         if( action.type === "SELECT" ) {
-          newState = Object.assign({}, state, { selected_id: action.id });
+          newState = Object.assign({}, state, { selected_id: action.id, mode: "read" });
 
         } else if( action.type === "CREATE" ) {
           const newMaxID = state.max_id + 1;
@@ -33,6 +33,24 @@
           newContents.push({ id: newMaxID, title: action.title, desc: action.desc });
           newState = Object.assign({}, state, { max_id: newMaxID, contents: newContents, mode: "read" });
 
+        } else if( action.type === "UPDATE" ) {
+          let newContents = [];
+          let i = 0;
+
+          while(i < state.contents.length ) {
+            if( state.selected_id === state.contents[i].id ) {
+              newContents.push({
+                id: state.selected_id,
+                title: action.title,
+                desc: action.desc
+              });
+            } else {
+              newContents.push(state.contents[i]);
+            }
+            i += 1;
+          }
+          newState = Object.assign({}, state, { contents: newContents, mode: "read" });
+        
         } else if( action.type === "DELETE" ) {
           let newContents = [];
           let i = 0;
@@ -45,6 +63,8 @@
             i += 1;
           }
           newState = Object.assign({}, state, { contents: newContents, mode: "welcome" });
+        } else if ( action.type === "CHANGE_MODE" ) {
+          newState = Object.assign({}, state, { mode: action.mode });
         }
         return newState;
       };
@@ -97,8 +117,28 @@
           <ul>
             <li>
               <a 
-                onclick="event.preventDefault();"
-                href="/create">create</a></li>
+                onclick="
+                  event.preventDefault();
+                  store.dispatch({
+                    type: 'CHANGE_MODE',
+                    mode: 'create',
+                  });
+                "
+                href="/create">create
+              </a>
+            </li>
+            <li>
+              <input
+                onclick="
+                  store.dispatch({
+                    type: 'CHANGE_MODE',
+                    mode: 'update',
+                  });
+                "
+                type="button"
+                value="update"
+              />
+            </li>
             <li>
               <input 
                 onclick="
@@ -144,6 +184,38 @@
               </form>
             </article>
           `;
+        } else if( state.mode === "update" ) {
+          console.log(state);
+          let title = state.contents[state.selected_id - 1].title;
+          let desc = state.contents[state.selected_id - 1].desc;
+
+          document.querySelector("#content").innerHTML = `
+            <article>
+              <form 
+                onsubmit="
+                  event.preventDefault();
+                  const _title = this.title.value;
+                  const _desc = this.desc.value;
+                  store.dispatch({
+                    type: 'UPDATE',
+                    title: _title,
+                    desc: _desc,
+                  });
+                "
+              >
+                <p>
+                  <input type="text" name="title" placeholder="title" value="${title}" />
+                </p>
+                <p>
+                  <textarea name="desc" placeholder="description">${desc}</textarea>
+                </p>
+                <p>
+                  <button>제출</button>
+                </p>
+              </form>
+            </article>
+          `;
+        
         } else if( state.mode === "read" ) {
           let i = 0;
           let aTitle, aDesc;
